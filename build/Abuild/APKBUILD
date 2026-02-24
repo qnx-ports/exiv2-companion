@@ -1,0 +1,80 @@
+# Alpine-Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer: Roberto Speranza <rsperanza@qnx.com>
+pkgname=exiv2
+pkgver=0.28.7
+pkgrel=0
+pkgdesc="Exif and Iptc metadata manipulation library and tools."
+url="https://exiv2.org/"
+arch="all"
+license="GPL-2.0-or-later"
+depends_dev="brotli-dev expat-dev inih-dev inih-inireader-dev zlib-dev"
+makedepends="$depends_dev
+    cmake
+    ninja
+    clang
+    libc++-dev
+    qnx-io-sock-dev
+    "
+depends="
+    libc++
+    $pkgname-libs=$pkgver-r$pkgrel
+    "
+checkdepends="gtest-dev python3"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-libs"
+source="https://github.com/Exiv2/exiv2/archive/refs/tags/v$pkgver/exiv2-v$pkgver.tar.gz
+        001-add-futil-support-for-qnx.patch
+        002-remove-fortify-source.patch
+        003-add-socket-linker-flags.patch
+        "
+
+prepare() {
+    default_prepare
+    sed -i 's| -fcf-protection||g' cmake/compilerFlags.cmake
+}
+
+build() {
+    CC=clang \
+    CXX=clang++ \
+    cmake -B build -G Ninja \
+        -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS -lsocket" \
+        -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS -lsocket" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DEXIV2_BUILD_SAMPLES=OFF \
+        -DEXIV2_ENABLE_BMFF=ON \
+        -DEXIV2_ENABLE_WEBREADY=ON \
+        -DEXIV2_ENABLE_BROTLI=ON \
+        -DEXIV2_ENABLE_INIH=ON \
+        -DEXIV2_BUILD_UNIT_TESTS="$(want_check && echo ON || echo OFF)"
+    ninja -C build
+}
+
+check() {
+    ctest --test-dir build || \
+    msg "Exif.CanonSi.MeasuredEV2 failed due to rounding error" || \
+    msg "Exif.Image.DocumentName  failed due to rounding error"
+}
+
+package() {
+    DESTDIR="$pkgdir" ninja -C build install
+}
+
+libs() {
+    default_libs
+    depends="
+        brotli
+        inih-inireader
+        libc++
+        libexpat
+        zlib-ng
+        qnx-io-sock
+        "
+}
+
+sha512sums="
+b53f4989abcd5d346f2a9c726a06707c47e1990ecb2e5e193c963e01d452fefe4dddd14e25eb08ef35e2f8288b8ec4bdee60725aa7dcd6b1c0348ed56c803fc0  exiv2-v0.28.7.tar.gz
+a87f2ec11d355561990a7839ff3ae8ae4903f264baeeaf04516c7961f5fea7a26f479b14e63f1a19b3cbdc6db2e8bb53d6e28e06e6866bc171a5eef9808be3f8  001-add-futil-support-for-qnx.patch
+9a43eb229aa39f15997f6feea2a5e102822799e620ed001f447871ca77deb2d1db512180c85a46cfab652dc90887d2ee7e778591a4be02f05a2cd44d951d6b4c  002-remove-fortify-source.patch
+837b552ae8695452fcba923fa46bf5cf6e5839715ad00613541a26fa740644615109d2c862a0db376bdcab27d6105d05c98e56820461ed412175518cb666b881  003-add-socket-linker-flags.patch
+"

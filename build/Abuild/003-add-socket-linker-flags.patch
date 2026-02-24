@@ -1,0 +1,27 @@
+diff --git a/app/CMakeLists.txt b/app/CMakeLists.txt
+index c98b548..7bb1f1f 100644
+--- a/app/CMakeLists.txt
++++ b/app/CMakeLists.txt
+@@ -23,7 +23,7 @@ if( EXIV2_ENABLE_NLS )
+     target_include_directories(exiv2 PRIVATE ${Intl_INCLUDE_DIRS})
+ endif()
+ 
+-target_link_libraries(exiv2 PRIVATE std::filesystem)
++target_link_libraries(exiv2 PRIVATE std::filesystem -lsocket)
+ 
+ if(MSVC OR MINGW)
+     # Trick to get properly UTF-8 encoded argv 
+diff --git a/unitTests/CMakeLists.txt b/unitTests/CMakeLists.txt
+index 51040c0..bd8e8e8 100644
+--- a/unitTests/CMakeLists.txt
++++ b/unitTests/CMakeLists.txt
+@@ -56,6 +56,9 @@ if( EXIV2_ENABLE_INIH )
+   target_link_libraries(unit_tests PRIVATE inih::libinih inih::inireader)
+ endif()
+ 
++
++target_link_libraries(unit_tests PRIVATE -lsocket)
++
+ # ZLIB is used in exiv2lib_int.
+ if( EXIV2_ENABLE_PNG )
+     target_link_libraries(unit_tests PRIVATE ${ZLIB_LIBRARIES} )

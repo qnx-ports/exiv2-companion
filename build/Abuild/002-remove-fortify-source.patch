@@ -1,0 +1,17 @@
+diff --git a/cmake/compilerFlags.cmake b/cmake/compilerFlags.cmake
+index 5420650..7c0c2e9 100644
+--- a/cmake/compilerFlags.cmake
++++ b/cmake/compilerFlags.cmake
+@@ -50,9 +50,9 @@ if ( MINGW OR UNIX OR MSYS ) # MINGW, Linux, APPLE, CYGWIN
+ 
+         add_compile_options(-D_GLIBCXX_ASSERTIONS)
+ 
+-        if (CMAKE_BUILD_TYPE STREQUAL Release AND NOT (APPLE OR MINGW OR MSYS))
+-            add_compile_options(-D_FORTIFY_SOURCE=2) # Requires to compile with -O2
+-        endif()
++        #if (CMAKE_BUILD_TYPE STREQUAL Release AND NOT (APPLE OR MINGW OR MSYS))
++        #    add_compile_options(-D_FORTIFY_SOURCE=2) # Requires to compile with -O2
++        #endif()
+ 
+         if(BUILD_WITH_COVERAGE)
+             add_compile_options(--coverage)
