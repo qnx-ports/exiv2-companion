@@ -7,23 +7,20 @@ index 1797c1b..d4924c1 100644
  #endif
  
 +#if defined(__QNX__)
-+#include <fcntl.h>
++#include <process.h>
 +#endif
 +
  #ifndef _MAX_PATH
  #define _MAX_PATH 1024
  #endif
-@@ -384,6 +388,14 @@ std::string getProcessPath() {
+@@ -384,6 +388,11 @@ std::string getProcessPath() {
      if (get_exec_path_failure)
        return "unknown";  // pathbuf not big enough
      auto path = fs::path(pathbuf);
 +#elif defined(__QNX__)
 +    char pathbuf[PATH_MAX] = {};
-+    int self_fd = open("/proc/self/exefile", O_RDONLY);
-+    if(self_fd < 0)
-+      return "unknown";
-+    if(read(self_fd, pathbuf, sizeof(pathbuf)) < 0)
-+      return "unknown";
++    if (_cmdname(pathbuf) == nullptr)
++        return "unknown";
 +    auto path = fs::path(pathbuf);
  #elif defined(__sun__)
      auto path = fs::read_symlink(Internal::stringFormat("/proc/%d/path/a.out", getpid()));
